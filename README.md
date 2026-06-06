@@ -96,7 +96,7 @@ Cada escenario incluye presets basados en situaciones reales de Bolivia 2026:
 ## Publicación
 
 ```
-Página web:  https://[usuario].github.io/simulacion-crisis-bolivia/
+Página web:  https://colapso-en-ecuaciones-m-numericos.netlify.app/
 Repositorio: https://github.com/JordyRHLM/DESAFIO-FINAL-METODOS-NUMERICOS.git
 ```
 
