@@ -1,0 +1,325 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     ESCENARIO C — Interpolación Numérica
+     Curva continua de precios de alimentos · Bolivia 2026
+═══════════════════════════════════════════════════════════════ -->
+
+<div class="container" id="moduloC">
+
+  <div class="module-header">
+    <div class="module-header__tag">⬡ Escenario C · Interpolación · 04/06/2026</div>
+    <h2 class="module-header__title">Curva de precios:<br>¿Cuánto costará mañana?</h2>
+    <p class="module-header__desc">
+      <strong>Contexto real:</strong> Los mercados de La Paz reportan precios de alimentos
+      solo en algunos días. Con interpolación numérica se reconstruye la curva continua
+      de precios para estimar el costo en cualquier día del mes y analizar la tendencia
+      del desabastecimiento.
+    </p>
+    <div class="method-pills">
+      <span class="method-pill active">Lagrange</span>
+      <span class="method-pill">Newton · Dif. Divididas</span>
+      <span class="method-pill">Splines Cúbicos</span>
+    </div>
+  </div>
+
+  <section class="page-section" style="padding-top:0;">
+
+    <!-- DESCRIPCIÓN DE MÉTODOS -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header"><h4>Algoritmos de interpolación</h4></div>
+      <div class="card__body">
+        <div class="algo-grid-3">
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Lagrange</span>
+            </div>
+            <pre><span class="cm">// P(x) = Σ yᵢ · Lᵢ(x)</span>
+Lᵢ(x) = Π_{j≠i} (x−xⱼ)/(xᵢ−xⱼ)
+
+<span class="cm">// Un solo polinomio global</span>
+<span class="cm">// Puede oscilar en extremos</span>
+<span class="cm">// (fenómeno de Runge)</span></pre>
+          </div>
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Newton · Dif. Divididas</span>
+            </div>
+            <pre><span class="cm">// f[x₀] + f[x₀,x₁](x−x₀) + ...</span>
+f[xᵢ,xⱼ] = (f[xⱼ]−f[xᵢ])/(xⱼ−xᵢ)
+
+<span class="cm">// Mismo polinomio que Lagrange</span>
+<span class="cm">// Fácil de actualizar con</span>
+<span class="cm">// nuevos datos (incremental)</span></pre>
+          </div>
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Spline Cúbico</span>
+            </div>
+            <pre><span class="cm">// Sᵢ(x) = aᵢ+bᵢΔx+cᵢΔx²+dᵢΔx³</span>
+<span class="cm">// Continuidad C² en cada nodo</span>
+
+<span class="cm">// Frontera natural: S''=0</span>
+<span class="cm">// Más estable con datos</span>
+<span class="cm">// dispersos o irregulares</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header">
+        <h4>Datos de precios</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" id="btnPresetC1">🥔 Papa</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetC2">🌾 Arroz</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetC3">🍬 Azúcar</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetC4">🫙 Aceite</button>
+        </div>
+      </div>
+      <div class="card__body">
+        <div id="presetDescC" style="display:none; font-size:0.8rem; color:#8b919e; margin-bottom:12px; font-family:DM Mono,monospace;"></div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Días con dato (x) — separados por coma</label>
+            <input class="form-control" id="int-x" value="1,5,10,15,20,30"
+              placeholder="Ej: 1,5,10,15,20,30">
+            <span class="form-hint">Ordenados de menor a mayor</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Precios observados (y) — misma cantidad que x</label>
+            <input class="form-control" id="int-y" value="8,10,13,16,19,22"
+              placeholder="Ej: 8,10,13,16,19,22">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Producto</label>
+            <input class="form-control" id="int-producto" value="Papa (arroba)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidad</label>
+            <input class="form-control" id="int-unidad" value="Bs">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estimar precio en el día x =</label>
+            <input class="form-control" id="int-xeval" type="number" value="12" min="1">
+            <span class="form-hint">Dentro o fuera del rango (extrapolación)</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-lg" id="btnInterpolar">Interpolar precios</button>
+          <button class="btn btn-secondary btn-lg" id="btnLimpiarInt">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="int-results" style="display:none;">
+
+      <!-- Métricas -->
+      <div id="int-metrics" style="margin-bottom:var(--space-6);"></div>
+
+      <!-- Análisis de subidas -->
+      <div id="int-analisis" style="margin-bottom:var(--space-6);"></div>
+
+      <!-- Tabs -->
+      <div class="tabs" style="margin-bottom:var(--space-4);">
+        <button class="tab-btn active" data-tab="curva">Curva</button>
+        <button class="tab-btn" data-tab="oscilacion">Runge</button>
+        <button class="tab-btn" data-tab="dif-div">Dif. Divididas</button>
+        <button class="tab-btn" data-tab="spline-coef">Spline coef.</button>
+        <button class="tab-btn" data-tab="estimaciones">Estimaciones</button>
+        <button class="tab-btn" data-tab="comparativa">Comparativa</button>
+      </div>
+
+      <!-- Panel: Curva -->
+      <div class="tab-panel active" id="panel-c-curva">
+        <div class="card">
+          <div class="card__header"><h4>Curva interpolada de precios</h4></div>
+          <div class="card__body">
+            <div class="chart-container" style="height:340px;">
+              <canvas id="chartCurva"></canvas>
+            </div>
+            <p style="font-size:0.78rem; color:#555c6b; margin-top:8px;">
+              🟡 Puntos dorados = datos reales &nbsp;·&nbsp;
+              🔴 Triángulo = estimación día solicitado &nbsp;·&nbsp;
+              Las líneas reconstruyen la curva continua.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Oscilación -->
+      <div class="tab-panel" id="panel-c-oscilacion">
+        <div class="card">
+          <div class="card__header"><h4>Fenómeno de Runge — Lagrange vs. Spline</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              El <strong>fenómeno de Runge</strong> aparece cuando el polinomio de alto grado
+              oscila fuertemente en los extremos. El spline cúbico lo evita al dividir el
+              dominio en segmentos. Valores grandes en los extremos indican que Lagrange
+              no es confiable para estos datos.
+            </p>
+            <div class="chart-container" style="height:260px;">
+              <canvas id="chartOscilacion"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Diferencias Divididas -->
+      <div class="tab-panel" id="panel-c-dif-div">
+        <div class="card">
+          <div class="card__header"><h4>Tabla de diferencias divididas — Newton</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              La primera fila (diagonal) contiene los coeficientes del polinomio de Newton:
+              <strong>f[x₀], f[x₀,x₁], f[x₀,x₁,x₂], …</strong>
+            </p>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead id="tablaDDHead"></thead>
+                <tbody id="tablaDDBody">
+                  <tr><td colspan="10" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Coeficientes Spline -->
+      <div class="tab-panel" id="panel-c-spline-coef">
+        <div class="card">
+          <div class="card__header"><h4>Coeficientes del Spline Cúbico por segmento</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              Cada fila es un intervalo [xᵢ, xᵢ₊₁].
+              <strong>S(x) = a + b·Δx + c·Δx² + d·Δx³</strong> &nbsp; donde Δx = x − xᵢ
+            </p>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="center">Intervalo</th>
+                    <th class="right">a</th>
+                    <th class="right">b</th>
+                    <th class="right">c</th>
+                    <th class="right">d</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaSplineBody">
+                  <tr><td colspan="5" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Estimaciones -->
+      <div class="tab-panel" id="panel-c-estimaciones">
+        <div class="card">
+          <div class="card__header"><h4>Estimaciones en días sin dato</h4></div>
+          <div class="card__body">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="center">Día</th>
+                    <th class="right">Lagrange</th>
+                    <th class="right">Newton</th>
+                    <th class="right highlight">Spline</th>
+                    <th class="right">|Lag−Spl|</th>
+                    <th class="center">Confianza</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaEstimBody">
+                  <tr><td colspan="6" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Comparativa de productos -->
+      <div class="tab-panel" id="panel-c-comparativa">
+        <div class="card" style="margin-bottom:var(--space-4);">
+          <div class="card__header"><h4>¿Qué producto tuvo mayor incremento?</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:var(--space-4);">
+              Selecciona varios presets y compara. La tabla muestra el incremento
+              porcentual, la tasa diaria y el precio estimado al final del mes para
+              todos los productos disponibles.
+            </p>
+            <div class="table-wrapper" style="margin-bottom:var(--space-6);">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th class="right">Precio inicial</th>
+                    <th class="right">Precio final</th>
+                    <th class="right">Incremento %</th>
+                    <th class="right">Tasa diaria</th>
+                    <th class="center">Impacto</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaComparativaProductos"></tbody>
+              </table>
+            </div>
+            <div class="chart-container" style="height:280px;">
+              <div class="chart-title">Incremento porcentual por producto</div>
+              <canvas id="chartComparativaProductos"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interpretación — 5 preguntas -->
+      <div class="card" style="margin-top:var(--space-6);">
+        <div class="card__header">
+          <h4>🔬 Interpretación del escenario C</h4>
+        </div>
+        <div class="card__body">
+          <div id="int-interpretacion"
+            style="font-size:0.9rem; line-height:1.8; color:#c8cdd5; margin-bottom:var(--space-6);">
+          </div>
+
+          <h5 style="margin-bottom:var(--space-4);">Respuestas del escenario C</h5>
+          <div class="insight-grid">
+            <div class="insight-card">
+              <div class="insight-card__icon">💰</div>
+              <div class="insight-card__title">¿Cuál sería el precio en un día sin dato?</div>
+              <p id="cq1">Ejecuta la interpolación para ver el resultado.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">📈</div>
+              <div class="insight-card__title">¿Cómo se comporta la curva durante el mes?</div>
+              <p id="cq2">Ejecuta la interpolación para ver el análisis de tendencia.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">🏆</div>
+              <div class="insight-card__title">¿Qué producto tuvo mayor incremento?</div>
+              <p id="cq3">Ve al tab <strong>Comparativa</strong> para ver el ranking de productos.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">🔍</div>
+              <div class="insight-card__title">¿Qué tan confiable es la interpolación?</div>
+              <p id="cq4">Ejecuta la interpolación para ver el diagnóstico de confiabilidad.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">📉</div>
+              <div class="insight-card__title">¿Qué pasa si los datos son muy dispersos?</div>
+              <p id="cq5">Prueba el preset <strong>🍬 Azúcar</strong> (solo 4 puntos) y observa cómo divergen Lagrange y Spline.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /int-results -->
+
+  </section>
+</div>
+
+<script type="module" src="js/modules/escenario-c-interpolacion.js"></script>

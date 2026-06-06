@@ -1,0 +1,221 @@
+/* ═══════════════════════════════════════════════════════════════
+   CRISISNUM — responsive.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Tablet ≤ 1024px ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  :root { --navbar-h: 60px; }
+
+  .container  { padding: 0 var(--space-5); }
+  .hero__inner{ padding: 0 var(--space-5); }
+  .hero       { min-height: 80vh; padding: var(--space-20) 0 var(--space-12); }
+  .page-section { padding: var(--space-10) 0; }
+
+  .ab-grid            { grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  .ax-symbol          { display: none; }
+  .two-col-grid       { grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  .context-grid       { grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+}
+
+/* ── Mobile ≤ 768px ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --navbar-h: 56px; }
+
+  /* Navbar */
+  .navbar__nav {
+    display: none;
+    position: fixed;
+    top: var(--navbar-h);
+    left: 0; right: 0;
+    background: rgba(14,15,17,0.98);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--c-border);
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-4);
+    gap: var(--space-1);
+    z-index: 999;
+    animation: fadeIn 0.2s ease;
+  }
+  .navbar__nav.open { display: flex; }
+  .navbar__toggle   { display: flex; }
+  .nav-link         { padding: var(--space-3) var(--space-4); font-size: 0.9rem; }
+
+  /* Hero */
+  .hero             { min-height: auto; padding: var(--space-16) 0 var(--space-10); }
+  .hero__stats      { grid-template-columns: repeat(2, 1fr); }
+  .hero__cta        { flex-direction: column; }
+  .hero__cta .btn   { width: 100%; justify-content: center; }
+
+  /* Layout */
+  .page-section     { padding: var(--space-8) 0; }
+  .container        { padding: 0 var(--space-4); }
+
+  /* Cards */
+  .card__body   { padding: var(--space-4); }
+  .card__header {
+    padding: var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  /* Module header */
+  .module-header        { padding: var(--space-8) 0 var(--space-6); }
+  .module-header__title { font-size: clamp(1.4rem, 6vw, 2rem); }
+  .module-header__desc  { font-size: 0.9rem; }
+
+  /* Grids → 1 columna */
+  .ab-grid        { grid-template-columns: 1fr; gap: var(--space-4); }
+  .ax-symbol      { display: none; }
+  .two-col-grid   { grid-template-columns: 1fr; gap: var(--space-4); }
+  .context-grid   { grid-template-columns: 1fr; gap: var(--space-4); }
+  .modules-grid   { grid-template-columns: 1fr 1fr; }
+  .insight-grid   { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .form-grid      { grid-template-columns: 1fr; }
+
+  /* Tabs: scroll horizontal, no wrap */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    padding: var(--space-2) var(--space-3);
+    white-space: nowrap;
+  }
+
+  /* Matriz inputs */
+  .matrix-input     { gap: 3px; }
+  .matrix-input input {
+    padding: 0.35rem 0.2rem;
+    font-size: 0.78rem;
+    min-width: 0;
+  }
+
+  /* Tablas */
+  .table th, .table td {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.78rem;
+  }
+  /* Tabla días críticos escenario B — no cortar texto */
+  #ode-dias-criticos .table { white-space: nowrap; font-size: 0.75rem; }
+  #ode-dias-criticos .table th,
+  #ode-dias-criticos .table td { padding: var(--space-2) var(--space-2); }
+  .table-wrapper { border-radius: var(--radius-md); }
+
+  /* Charts */
+  .chart-container         { padding: var(--space-3); }
+  .chart-container canvas  { max-height: 240px; }
+
+  /* Buttons */
+  .btn-row                 { flex-direction: column; gap: var(--space-2); }
+  .btn-row .btn            { width: 100%; justify-content: center; }
+
+  /* Pills */
+  .method-pills { gap: var(--space-1); }
+  .method-pill  { font-size: 0.7rem; padding: var(--space-1) var(--space-2); }
+
+  /* Alerts */
+  .alert { padding: var(--space-3) var(--space-4); font-size: 0.82rem; }
+
+  /* Interp block */
+  .interp-block    { padding: var(--space-4); }
+  .interp-block p  { font-size: 0.82rem; }
+
+  /* Insight cards */
+  .insight-card    { padding: var(--space-4); }
+
+  /* Footer */
+  .footer__inner   { flex-direction: column; gap: var(--space-4); }
+  .footer__right   { text-align: left; }
+
+  /* Escenario A — grids de algoritmos 3 cols → 1 col */
+  .algo-block pre  { font-size: 0.75rem; padding: var(--space-3) var(--space-4); }
+
+  /* Escenario B/C/D — grids internos de alertas 3 cols → 1 col */
+  [style*="grid-template-columns:1fr 1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3) !important;
+  }
+
+  /* Preset desc */
+  #presetDesc, #presetDescB, #presetDescC,
+  #presetDescD, #presetDescE { font-size: 0.75rem; }
+
+  /* Número de condición y resultados resumen */
+  .result-box          { padding: var(--space-4); }
+  .result-box__value   { font-size: 1.1rem; }
+}
+
+/* ── Small mobile ≤ 480px ────────────────────────────────────── */
+@media (max-width: 480px) {
+  .hero__stats          { grid-template-columns: 1fr 1fr; }
+  .modules-grid         { grid-template-columns: 1fr; }
+  .insight-grid         { grid-template-columns: 1fr !important; }
+
+  /* Tabs aún más compactos */
+  .tab-btn              { font-size: 0.72rem; padding: var(--space-1) var(--space-2); }
+
+  /* Charts */
+  .chart-container canvas { max-height: 200px; }
+
+  /* Botones lg → más compactos */
+  .btn-lg               { padding: 0.7rem 1.25rem; font-size: 0.875rem; }
+
+  /* Matriz: mínimo 0 para no overflow */
+  .matrix-input input   { font-size: 0.7rem; padding: 0.25rem 0.1rem; }
+
+  /* Tabla: ocultar columnas menos importantes */
+  .table-hide-sm        { display: none; }
+
+  /* Módulos nav: 1 col */
+  .module-nav-card      { padding: var(--space-4); }
+
+  /* Escenario A: grids 2 col internos → 1 col */
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Print ───────────────────────────────────────────────────── */
+@media print {
+  .navbar, .footer, .btn, .tabs { display: none !important; }
+  .tab-panel    { display: block !important; }
+  .main-content { margin-top: 0 !important; }
+  body          { background: white; color: black; }
+  .card         { border: 1px solid #ccc; break-inside: avoid; }
+  .algo-block pre { border: 1px solid #ccc; background: #f5f5f5; color: #333; }
+  .chart-container { break-inside: avoid; }
+}
+
+/* Escenario D — tabla sin-inflación responsiva */
+#panel-sin-inflacion-content .table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 768px) {
+  #panel-sin-inflacion-content .table th:nth-child(3),
+  #panel-sin-inflacion-content .table td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* Escenario E — métricas 3 col → 1 col en móvil */
+@media (max-width: 768px) {
+  #moduloE .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #moduloE .table th:nth-child(4),
+  #moduloE .table td:nth-child(4) {
+    display: none;
+  }
+}

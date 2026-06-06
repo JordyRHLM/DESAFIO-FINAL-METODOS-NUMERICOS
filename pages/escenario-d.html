@@ -1,0 +1,328 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     ESCENARIO D — Integración Numérica
+     Costo acumulado y pérdida del poder adquisitivo · Bolivia 2026
+═══════════════════════════════════════════════════════════════ -->
+
+<div class="container" id="moduloD">
+
+  <div class="module-header">
+    <div class="module-header__tag">⬡ Escenario D · Integración Numérica · 04/06/2026</div>
+    <h2 class="module-header__title">Costo acumulado:<br>¿Cuánto gasta una familia al mes?</h2>
+    <p class="module-header__desc">
+      <strong>Contexto real:</strong> En La Paz, el gasto diario en la canasta básica no es
+      constante — sube con los bloqueos, el pánico de compra y la inflación. La integral
+      <strong>∫c(t)dt</strong> sobre el mes calcula el costo total acumulado y permite
+      estimar cuándo el gasto supera el salario familiar.
+    </p>
+    <div class="method-pills">
+      <span class="method-pill active">Trapecio · O(h²)</span>
+      <span class="method-pill">Simpson 1/3 · O(h⁴)</span>
+      <span class="method-pill">Simpson 3/8 · O(h⁴)</span>
+    </div>
+  </div>
+
+  <section class="page-section" style="padding-top:0;">
+
+    <!-- DESCRIPCIÓN DE MÉTODOS -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header"><h4>Algoritmos de integración numérica</h4></div>
+      <div class="card__body">
+        <div class="algo-grid-3">
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Regla del Trapecio · O(h²)</span>
+            </div>
+            <pre><span class="cm">// ∫f dx ≈ h/2·[f(x₀) + 2f(x₁) +</span>
+<span class="cm">//         ... + 2f(xₙ₋₁) + f(xₙ)]</span>
+h = (b−a)/n
+<span class="kw">suma</span> = f(a) + f(b)
+<span class="kw">para</span> i=1..n-1:
+  suma += 2·f(a + i·h)
+resultado = (h/2)·suma
+
+<span class="cm">// Approx. lineal en cada segmento</span>
+<span class="cm">// Error global: O(h²)</span></pre>
+          </div>
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Simpson 1/3 · O(h⁴)</span>
+            </div>
+            <pre><span class="cm">// n debe ser PAR</span>
+<span class="cm">// ∫f dx ≈ h/3·[f(x₀) + 4f(x₁) +</span>
+<span class="cm">//    2f(x₂) + 4f(x₃) + ... + f(xₙ)]</span>
+<span class="kw">para</span> i=1..n-1:
+  coef = (i % 2 == 0) ? 2 : 4
+  suma += coef·f(xᵢ)
+resultado = (h/3)·suma
+
+<span class="cm">// Approx. parabólica · Error: O(h⁴)</span></pre>
+          </div>
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Simpson 3/8 · O(h⁴)</span>
+            </div>
+            <pre><span class="cm">// n debe ser MÚLTIPLO DE 3</span>
+<span class="cm">// Coeficientes: 1,3,3,2,3,3,2,...,1</span>
+<span class="kw">para</span> i=1..n-1:
+  coef = (i%3 == 0) ? 2 : 3
+  suma += coef·f(xᵢ)
+resultado = (3h/8)·suma
+
+<span class="cm">// Approx. cúbica · Error: O(h⁴)</span>
+<span class="cm">// Útil cuando n es múltiplo de 3</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header">
+        <h4>Parámetros de integración</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" id="btnPresetD1">✅ Normal</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetD2">🚧 Bloqueo</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetD3">🚨 Crisis</button>
+        </div>
+      </div>
+      <div class="card__body">
+        <div id="presetDescD" style="display:none; font-size:0.8rem; color:#8b919e; margin-bottom:12px; font-family:DM Mono,monospace;"></div>
+
+        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px,1fr));">
+          <div class="form-group">
+            <label class="form-label">Función c(t) — Gasto diario</label>
+            <select class="form-control" id="int-fn">
+              <option value="linear">Lineal: c(t) = 80 + 1.5t</option>
+              <option value="exponential">Exponencial: c(t) = 70·e^(0.03t)</option>
+              <option value="logistic">Logística: c(t) = 200/(1+8·e^(-0.2t))</option>
+              <option value="quadratic">Cuadrática: c(t) = 75 + 0.05t²</option>
+              <option value="sinusoidal">Sinusoidal: c(t) = 90 + 15·sin(πt/15)</option>
+            </select>
+            <span class="form-hint">Modela el comportamiento del gasto diario en Bs</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Límite inferior a (día inicio)</label>
+            <input class="form-control" id="int-a" type="number" value="1" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Límite superior b (día fin)</label>
+            <input class="form-control" id="int-b" type="number" value="30" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subintervalos n</label>
+            <input class="form-control" id="int-n" type="number" value="30" min="2" step="2">
+            <span class="form-hint">Simpson 1/3 requiere n par · 3/8 requiere múltiplo de 3</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salario mensual familiar (Bs)</label>
+            <input class="form-control" id="int-salario" type="number" value="2500" step="100" min="0">
+            <span class="form-hint">Para calcular el % del presupuesto familiar</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Producto de la canasta</label>
+            <select class="form-control" id="int-producto">
+              <option value="papa">🥔 Papa (arroba)</option>
+              <option value="arroz">🌾 Arroz (kg)</option>
+              <option value="aceite">🫙 Aceite (litro)</option>
+              <option value="azucar">🍬 Azúcar (kg)</option>
+              <option value="pollo">🍗 Pollo (kg)</option>
+            </select>
+            <span class="form-hint">Para el análisis de impacto por producto</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Precio constante base (Bs/día)</label>
+            <input class="form-control" id="int-precio-base" type="number" value="80" step="5" min="0">
+            <span class="form-hint">Gasto diario si los precios NO hubieran subido</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-lg" id="btnIntegrar">Calcular costo acumulado</button>
+          <button class="btn btn-secondary btn-lg" id="btnLimpiarD">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="int-results-d" style="display:none;">
+
+      <!-- Métricas -->
+      <div id="int-metrics-d" style="margin-bottom:var(--space-6);"></div>
+
+      <!-- Resumen comparativo -->
+      <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card__header"><h4>Tabla resumen — comparación de métodos</h4></div>
+        <div class="card__body">
+          <div class="table-wrapper" id="int-resumen"></div>
+        </div>
+      </div>
+
+      <!-- Tabs de análisis -->
+      <div class="tabs" style="margin-bottom:var(--space-4);">
+        <button class="tab-btn active" data-tab="curva">Función c(t)</button>
+        <button class="tab-btn" data-tab="comparacion">Comparación</button>
+        <button class="tab-btn" data-tab="convergencia">Convergencia</button>
+        <button class="tab-btn" data-tab="poder">Poder adquisitivo</button>
+        <button class="tab-btn" data-tab="pasos-trap">Pasos Trapecio</button>
+        <button class="tab-btn" data-tab="pasos-s13">Pasos S. 1/3</button>
+        <button class="tab-btn" data-tab="pasos-s38">Pasos S. 3/8</button>
+        <button class="tab-btn" data-tab="sin-inflacion">Sin inflación</button>
+      </div>
+
+      <!-- Panel: Curva c(t) -->
+      <div class="tab-panel active" id="panel-d-curva">
+        <div class="card">
+          <div class="card__header"><h4>Función de gasto diario c(t) — área = costo total</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              El área bajo la curva c(t) entre los días <em>a</em> y <em>b</em> es el costo total acumulado.
+              La región sombreada representa <strong>∫c(t)dt</strong>.
+            </p>
+            <div class="chart-container" style="height:320px;">
+              <canvas id="chartCurvaD"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Comparación -->
+      <div class="tab-panel" id="panel-d-comparacion">
+        <div class="card">
+          <div class="card__header"><h4>Resultado de los 3 métodos vs. valor exacto</h4></div>
+          <div class="card__body">
+            <div class="chart-container" style="height:300px;">
+              <canvas id="chartComparacionD"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Convergencia -->
+      <div class="tab-panel" id="panel-d-convergencia">
+        <div class="card">
+          <div class="card__header"><h4>Convergencia del error vs. número de subintervalos</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              Al aumentar <em>n</em>, el error cae. La pendiente en escala log-log refleja el
+              orden del método: <strong>O(h²)</strong> para Trapecio y <strong>O(h⁴)</strong>
+              para ambas variantes de Simpson.
+            </p>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="chartConvergenciaD"></canvas>
+            </div>
+            <div style="margin-top:16px;">
+              <h5 style="margin-bottom:8px;">Tabla de convergencia por n</h5>
+              <div class="table-wrapper">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th class="center">n</th>
+                      <th class="right">Trapecio</th>
+                      <th class="right">Err. Trap.</th>
+                      <th class="right">Simp. 1/3</th>
+                      <th class="right">Err. S1/3</th>
+                      <th class="right">Simp. 3/8</th>
+                      <th class="right">Err. S3/8</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaConvergenciaBody">
+                    <tr><td colspan="7" class="table-empty">Ejecuta el cálculo</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Poder adquisitivo -->
+      <div class="tab-panel" id="panel-d-poder">
+        <div class="card">
+          <div class="card__header"><h4>Proyección del poder adquisitivo familiar</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              Proyección del costo mensual vs. salario fijo durante 6 meses.
+              Las barras en <strong style="color:#d45f5f">rojo</strong> indican meses con déficit.
+            </p>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="chartPoderAdqD"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Pasos Trapecio -->
+      <div class="tab-panel" id="panel-d-pasos-trap">
+        <div class="card">
+          <div class="card__header"><h4>Nodos y coeficientes — Regla del Trapecio</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.82rem; color:#8b919e; margin-bottom:12px;">
+              Coeficientes del Trapecio: <strong>1, 2, 2, …, 2, 1</strong><br>
+              Resultado = h/2 · Σ(coef · f(xᵢ))
+            </p>
+            <div class="table-wrapper" id="tablaTrapecioBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Pasos Simpson 1/3 -->
+      <div class="tab-panel" id="panel-d-pasos-s13">
+        <div class="card">
+          <div class="card__header"><h4>Nodos y coeficientes — Simpson 1/3</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.82rem; color:#8b919e; margin-bottom:12px;">
+              Coeficientes de Simpson 1/3: <strong>1, 4, 2, 4, 2, …, 4, 1</strong><br>
+              Resultado = h/3 · Σ(coef · f(xᵢ))
+            </p>
+            <div class="table-wrapper" id="tablaS13Body"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Pasos Simpson 3/8 -->
+      <div class="tab-panel" id="panel-d-pasos-s38">
+        <div class="card">
+          <div class="card__header"><h4>Nodos y coeficientes — Simpson 3/8</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.82rem; color:#8b919e; margin-bottom:12px;">
+              Coeficientes de Simpson 3/8: <strong>1, 3, 3, 2, 3, 3, 2, …, 3, 3, 1</strong><br>
+              Resultado = 3h/8 · Σ(coef · f(xᵢ))
+            </p>
+            <div class="table-wrapper" id="tablaS38Body"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Comparación sin inflación -->
+      <div class="tab-panel" id="panel-d-sin-inflacion">
+        <div class="card">
+          <div class="card__header"><h4>¿Cuánto hubiera gastado sin inflación?</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              Comparación entre el costo real acumulado (con inflación) y el costo hipotético
+              si los precios se hubieran mantenido constantes en el valor base ingresado.
+              La diferencia es la <strong>pérdida del poder adquisitivo</strong>.
+            </p>
+            <div id="panel-sin-inflacion-content">
+              <div class="table-empty">Ejecuta el cálculo para ver la comparación.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interpretación -->
+      <div class="card" style="margin-top:var(--space-6);">
+        <div class="card__header">
+          <h4>🔬 Interpretación del escenario</h4>
+        </div>
+        <div class="card__body">
+          <div id="int-interpretacion-d" style="font-size:0.9rem; line-height:1.8; color:#c8cdd5;"></div>
+        </div>
+      </div>
+
+    </div><!-- /int-results-d -->
+
+  </section>
+</div>
+
+<script type="module" src="js/modules/escenario-d-integracion.js"></script>

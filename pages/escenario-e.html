@@ -1,0 +1,403 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     ESCENARIO E — Raíces de Ecuaciones No Lineales
+     Umbrales críticos de abastecimiento · Bolivia 2026
+═══════════════════════════════════════════════════════════════ -->
+
+<div class="container" id="moduloE">
+
+  <div class="module-header">
+    <div class="module-header__tag">⬡ Escenario E · Raíces de Ecuaciones · 04/06/2026</div>
+    <h2 class="module-header__title">Umbrales críticos:<br>¿Cuándo colapsa el sistema?</h2>
+    <p class="module-header__desc">
+      <strong>Contexto real:</strong> El día exacto en que el consumo supera al reabastecimiento,
+      el precio rebasa el presupuesto familiar, o el descontento social llega al punto de
+      masificación son <strong>raíces de ecuaciones no lineales</strong>. Se comparan
+      tres métodos con distintas velocidades de convergencia.
+    </p>
+    <div class="method-pills">
+      <span class="method-pill active">Bisección · O(log₂n)</span>
+      <span class="method-pill">Newton-Raphson · Cuadrático</span>
+      <span class="method-pill">Secante · Superlineal</span>
+    </div>
+  </div>
+
+  <section class="page-section" style="padding-top:0;">
+
+    <!-- DESCRIPCIÓN ALGORITMOS -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header"><h4>Algoritmos de búsqueda de raíces</h4></div>
+      <div class="card__body">
+        <div class="algo-grid-3">
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Bisección</span>
+            </div>
+            <pre><span class="cm">// Requiere: f(a)·f(b) &lt; 0</span>
+<span class="kw">mientras</span> (b−a)/2 > tol:
+  c = (a + b) / 2
+  <span class="kw">si</span> f(a)·f(c) &lt; 0:
+    b = c
+  <span class="kw">sino</span>:
+    a = c
+<span class="cm">// Garantizado · lineal · lento</span></pre>
+          </div>
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Newton-Raphson</span>
+            </div>
+            <pre><span class="cm">// Requiere: x₀ cerca de raíz</span>
+<span class="kw">mientras</span> |Δx| > tol:
+  x = x − f(x)/f'(x)
+
+<span class="cm">// f'(x) por diferencias centrales:</span>
+f'(x) ≈ (f(x+h)−f(x−h))/(2h)
+<span class="cm">// Cuadrático · muy rápido</span></pre>
+          </div>
+          <div class="algo-block" style="margin:0;">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Secante</span>
+            </div>
+            <pre><span class="cm">// Requiere: x₀, x₁ iniciales</span>
+<span class="kw">mientras</span> |Δx| > tol:
+  x₂ = x₁ − f(x₁)·(x₁−x₀)
+            / (f(x₁)−f(x₀))
+  x₀ = x₁; x₁ = x₂
+<span class="cm">// Superlineal (~1.618) · sin f'</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header">
+        <h4>Configuración</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" id="btnPresetE1">⛽ Vaciado</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetE2">💰 Costo</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetE3b">⛽ Carburante</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetE4">📣 Opinión</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetE5">⚖️ Equilibrio</button>
+        </div>
+      </div>
+      <div class="card__body">
+        <div id="presetDescE" style="display:none; font-size:0.8rem; color:#8b919e; margin-bottom:12px; font-family:DM Mono,monospace;"></div>
+
+        <!-- Función -->
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label">f(x) — función JavaScript (usa Math.exp, Math.log, Math.sin, etc.)</label>
+          <input class="form-control" id="raiz-expr"
+            value="50 - 80 * Math.exp(0.05 * x)"
+            placeholder="Ej: x*x*x - 2*x - 5">
+          <span class="form-hint">
+            Ejemplos: &nbsp;
+            <code>x*x - 4</code> &nbsp;·&nbsp;
+            <code>Math.exp(x) - 3*x</code> &nbsp;·&nbsp;
+            <code>50 - 80*Math.exp(0.05*x)</code>
+          </span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:12px; margin-bottom:16px;">
+          <div>
+            <p style="font-size:0.8rem; color:#8b919e; margin-bottom:8px; font-family:DM Mono,monospace;">BISECCIÓN</p>
+            <div class="form-group">
+              <label class="form-label">a (extremo izquierdo)</label>
+              <input class="form-control" id="raiz-a" type="number" value="0" step="0.5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">b (extremo derecho)</label>
+              <input class="form-control" id="raiz-b" type="number" value="15" step="0.5">
+            </div>
+          </div>
+          <div>
+            <p style="font-size:0.8rem; color:#8b919e; margin-bottom:8px; font-family:DM Mono,monospace;">NEWTON-RAPHSON</p>
+            <div class="form-group">
+              <label class="form-label">x₀ (valor inicial)</label>
+              <input class="form-control" id="raiz-x0-nr" type="number" value="5" step="0.5">
+            </div>
+          </div>
+          <div>
+            <p style="font-size:0.8rem; color:#8b919e; margin-bottom:8px; font-family:DM Mono,monospace;">SECANTE</p>
+            <div class="form-group">
+              <label class="form-label">x₀</label>
+              <input class="form-control" id="raiz-x0-sec" type="number" value="0" step="0.5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">x₁</label>
+              <input class="form-control" id="raiz-x1-sec" type="number" value="10" step="0.5">
+            </div>
+          </div>
+          <div>
+            <p style="font-size:0.8rem; color:#8b919e; margin-bottom:8px; font-family:DM Mono,monospace;">PARÁMETROS</p>
+            <div class="form-group">
+              <label class="form-label">Tolerancia</label>
+              <input class="form-control" id="raiz-tol" type="number" value="0.000001" step="0.000001">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Máx. iteraciones</label>
+              <input class="form-control" id="raiz-maxiter" type="number" value="100">
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensajes de error por método -->
+        <div id="err-bis" class="alert alert-danger" style="display:none; margin-bottom:8px;"></div>
+        <div id="err-nr"  class="alert alert-danger" style="display:none; margin-bottom:8px;"></div>
+        <div id="err-sec" class="alert alert-danger" style="display:none; margin-bottom:8px;"></div>
+
+        <div style="display:flex; gap:12px;">
+          <button class="btn btn-primary btn-lg" id="btnCalcularRaices">Calcular raíces</button>
+          <button class="btn btn-secondary btn-lg" id="btnLimpiarRaices">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="raiz-results" style="display:none;">
+
+      <!-- Métricas por método -->
+      <div class="algo-grid-3" style="margin-bottom:var(--space-6);">
+
+        <!-- Bisección -->
+        <div class="card card--blue">
+          <div class="card__header"><h4 style="color:#5b9bd5;">Bisección</h4></div>
+          <div class="card__body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">RAÍZ</div>
+                <div id="metrica-bis-raiz" style="font-size:1rem; font-family:var(--f-mono); color:#5b9bd5;">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">ITERACIONES</div>
+                <div id="metrica-bis-iter" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">CONVERGIÓ</div>
+                <div id="metrica-bis-conv" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">f(raíz)</div>
+                <div id="metrica-bis-fval" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Newton-Raphson -->
+        <div class="card card--green">
+          <div class="card__header"><h4 style="color:#4caf82;">Newton-Raphson</h4></div>
+          <div class="card__body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">RAÍZ</div>
+                <div id="metrica-nr-raiz" style="font-size:1rem; font-family:var(--f-mono); color:#4caf82;">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">ITERACIONES</div>
+                <div id="metrica-nr-iter" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">CONVERGIÓ</div>
+                <div id="metrica-nr-conv" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">f(raíz)</div>
+                <div id="metrica-nr-fval" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secante -->
+        <div class="card card--gold">
+          <div class="card__header"><h4 style="color:#e6a817;">Secante</h4></div>
+          <div class="card__body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">RAÍZ</div>
+                <div id="metrica-sec-raiz" style="font-size:1rem; font-family:var(--f-mono); color:#e6a817;">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">ITERACIONES</div>
+                <div id="metrica-sec-iter" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">CONVERGIÓ</div>
+                <div id="metrica-sec-conv" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+              <div class="insight-card" style="padding:10px;">
+                <div style="font-size:0.65rem; opacity:.6;">f(raíz)</div>
+                <div id="metrica-sec-fval" style="font-size:1rem; font-family:var(--f-mono);">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" style="margin-bottom:var(--space-4);">
+        <button class="tab-btn active" data-tab="funcion">Gráfico f(x)</button>
+        <button class="tab-btn" data-tab="convergencia">Convergencia</button>
+        <button class="tab-btn" data-tab="bis">Tabla Bisección</button>
+        <button class="tab-btn" data-tab="nr">Tabla Newton-R.</button>
+        <button class="tab-btn" data-tab="sec">Tabla Secante</button>
+        <button class="tab-btn" data-tab="comparativa">Comparativa</button>
+      </div>
+
+      <!-- Gráfico f(x) -->
+      <div class="tab-panel active" id="panel-e-funcion">
+        <div class="card">
+          <div class="card__header"><h4>Función f(x) y raíz encontrada</h4></div>
+          <div class="card__body">
+            <div class="chart-container" style="height:340px;">
+              <canvas id="chartFuncion"></canvas>
+            </div>
+            <p style="font-size:0.78rem; color:#555c6b; margin-top:8px;">
+              🔴 Círculo rojo = raíz encontrada · Línea punteada = f(x)=0
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Convergencia -->
+      <div class="tab-panel" id="panel-e-convergencia">
+        <div class="card">
+          <div class="card__header"><h4>Velocidad de convergencia — escala logarítmica</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              Una pendiente más pronunciada = convergencia más rápida.
+              Newton-Raphson (cuadrático) desciende mucho más rápido que Bisección (lineal).
+              Secante queda entre los dos.
+            </p>
+            <div class="chart-container" style="height:300px;">
+              <canvas id="chartConvergencia"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Bisección -->
+      <div class="tab-panel" id="panel-e-bis">
+        <div class="card">
+          <div class="card__header"><h4>Iteraciones — Bisección</h4></div>
+          <div class="card__body">
+            <div class="table-wrapper" style="overflow-x:auto;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="center">k</th>
+                    <th class="right">a</th>
+                    <th class="right">b</th>
+                    <th class="right">c = (a+b)/2</th>
+                    <th class="right">f(a)</th>
+                    <th class="right">f(c)</th>
+                    <th class="right">Error (b−a)/2</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaBisBody">
+                  <tr><td colspan="7" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Newton-Raphson -->
+      <div class="tab-panel" id="panel-e-nr">
+        <div class="card">
+          <div class="card__header"><h4>Iteraciones — Newton-Raphson</h4></div>
+          <div class="card__body">
+            <div class="table-wrapper" style="overflow-x:auto;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="center">k</th>
+                    <th class="right">x</th>
+                    <th class="right">f(x)</th>
+                    <th class="right">f'(x)</th>
+                    <th class="right">x nuevo</th>
+                    <th class="right">|Error|</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaNRBody">
+                  <tr><td colspan="6" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Secante -->
+      <div class="tab-panel" id="panel-e-sec">
+        <div class="card">
+          <div class="card__header"><h4>Iteraciones — Secante</h4></div>
+          <div class="card__body">
+            <div class="table-wrapper" style="overflow-x:auto;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="center">k</th>
+                    <th class="right">x₀</th>
+                    <th class="right">x₁</th>
+                    <th class="right">f(x₀)</th>
+                    <th class="right">f(x₁)</th>
+                    <th class="right">x₂ nuevo</th>
+                    <th class="right">|Error|</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaSecBody">
+                  <tr><td colspan="7" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparativa -->
+      <div class="tab-panel" id="panel-e-comparativa">
+        <div class="card">
+          <div class="card__header"><h4>Resumen comparativo de los tres métodos</h4></div>
+          <div class="card__body">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Método</th>
+                    <th class="right">Raíz</th>
+                    <th class="right">f(raíz)</th>
+                    <th class="center">Iteraciones</th>
+                    <th class="right">Error final</th>
+                    <th class="center">Orden emp.</th>
+                    <th class="center">Convergió</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaCompEBody">
+                  <tr><td colspan="7" class="table-empty">Ejecuta el cálculo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interpretación -->
+      <div class="card" style="margin-top:var(--space-6);">
+        <div class="card__header">
+          <div class="insight-card__icon">🔬</div>
+          <h4>Interpretación del escenario</h4>
+        </div>
+        <div class="card__body">
+          <div id="raiz-interpretacion" style="font-size:0.9rem; line-height:1.8; color:#c8cdd5;"></div>
+        </div>
+      </div>
+
+    </div><!-- /raiz-results -->
+
+  </section>
+</div>
+
+<script type="module" src="js/modules/escenario-e-raices.js"></script>

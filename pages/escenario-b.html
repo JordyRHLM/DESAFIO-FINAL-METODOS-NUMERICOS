@@ -1,0 +1,260 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     ESCENARIO B — Ecuaciones Diferenciales Ordinarias
+     Vaciado crítico de reservas de carburante · Bolivia 2026
+═══════════════════════════════════════════════════════════════ -->
+
+<div class="container" id="moduloB">
+
+  <div class="module-header">
+    <div class="module-header__tag">⬡ Escenario B · Ecuaciones Diferenciales · 04/06/2026</div>
+    <h2 class="module-header__title">Vaciado de reservas:<br>¿Cuándo se acaba el carburante?</h2>
+    <p class="module-header__desc">
+      <strong>Contexto real:</strong> Las reservas de carburante en La Paz disminuyen
+      cuando el reabastecimiento se corta por bloqueos y la demanda sube por pánico.
+      Se modela la ecuación <strong>R'(t) = entrada − consumo₀·e<sup>kt</sup></strong>
+      y se comparan tres métodos numéricos para predecir el día en que la reserva
+      llega al nivel crítico.
+    </p>
+    <div class="method-pills">
+      <span class="method-pill active">Euler · O(h)</span>
+      <span class="method-pill">Heun · O(h²)</span>
+      <span class="method-pill">RK4 · O(h⁴)</span>
+    </div>
+  </div>
+
+  <section class="page-section" style="padding-top:0;">
+
+    <!-- MODELO MATEMÁTICO -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header"><h4>Modelo diferencial</h4></div>
+      <div class="card__body">
+        <div class="algo-block">
+          <div class="algo-block__header">
+            <span class="algo-block__lang">Modelo · R'(t) = entrada − consumo₀·eᵏᵗ</span>
+          </div>
+          <pre><span class="cm">// R(t)      = reserva disponible en miles de litros</span>
+<span class="cm">// entrada   = reabastecimiento diario constante (miles L/día)</span>
+<span class="cm">// consumo₀  = consumo base inicial (miles L/día)</span>
+<span class="cm">// k         = tasa de crecimiento del consumo (pánico/demanda)</span>
+<span class="cm">// Si entrada < consumo₀ · e^(k·t) → la reserva disminuye</span>
+
+<span class="cm">// Solución analítica exacta:</span>
+R(t) = R₀ + entrada·t − (consumo₀/k)·(eᵏᵗ − 1)</pre>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px;">
+          <div class="alert alert-info" style="margin:0;">
+            <strong>Euler</strong><br>
+            R_{n+1} = R_n + h·f(t_n, R_n)<br>
+            <span style="font-size:0.75rem; opacity:.7;">Error global O(h) · 1 evaluación/paso</span>
+          </div>
+          <div class="alert alert-warning" style="margin:0;">
+            <strong>Heun</strong><br>
+            k1 = f(t,R) · k2 = f(t+h, R+h·k1)<br>
+            R_{n+1} = R_n + h/2·(k1+k2)<br>
+            <span style="font-size:0.75rem; opacity:.7;">Error global O(h²) · 2 evaluaciones/paso</span>
+          </div>
+          <div class="alert alert-success" style="margin:0;">
+            <strong>RK4</strong><br>
+            Combina k1,k2,k3,k4 con pesos 1,2,2,1<br>
+            R_{n+1} = R_n + h/6·(k1+2k2+2k3+k4)<br>
+            <span style="font-size:0.75rem; opacity:.7;">Error global O(h⁴) · 4 evaluaciones/paso</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <div class="card__header">
+        <h4>Parámetros de simulación</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" id="btnPresetB1">✅ Normal</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetB2">🚧 Bloqueo</button>
+          <button class="btn btn-sm btn-secondary" id="btnPresetB3">🚨 Pánico</button>
+        </div>
+      </div>
+      <div class="card__body">
+        <div id="presetDescB" style="display:none; font-size:0.8rem; color:#8b919e; margin-bottom:12px; font-family:DM Mono,monospace;"></div>
+
+        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px,1fr));">
+          <div class="form-group">
+            <label class="form-label">R₀ — Reserva inicial (miles L)</label>
+            <input class="form-control" id="ode-R0" type="number" value="1000" step="50" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Entrada diaria (miles L/día)</label>
+            <input class="form-control" id="ode-entrada" type="number" value="80" step="5" min="0">
+            <span class="form-hint">Reabastecimiento constante</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">consumo₀ — Consumo base (miles L/día)</label>
+            <input class="form-control" id="ode-consumo0" type="number" value="60" step="5" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">k — Tasa de crecimiento del consumo</label>
+            <input class="form-control" id="ode-k" type="number" value="0.01" step="0.005" min="0">
+            <span class="form-hint">0 = consumo constante · 0.07 = pánico</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Días a simular</label>
+            <input class="form-control" id="ode-dias" type="number" value="30" step="5" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Paso h (días)</label>
+            <input class="form-control" id="ode-h" type="number" value="0.5" step="0.1" min="0.01" max="1">
+            <span class="form-hint">Menor h = más preciso pero más lento</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nivel crítico de reserva (miles L)</label>
+            <input class="form-control" id="ode-critico" type="number" value="200" step="50" min="0">
+            <span class="form-hint">Por debajo = alerta de desabastecimiento</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px;">
+          <button class="btn btn-primary btn-lg" id="btnSimularODE">Simular reservas</button>
+          <button class="btn btn-secondary btn-lg" id="btnLimpiarODE">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="ode-results" style="display:none;">
+
+      <!-- Métricas -->
+      <div id="ode-metrics" style="margin-bottom:var(--space-6);"></div>
+
+      <!-- Tabs de resultados -->
+      <div class="tabs" style="margin-bottom:var(--space-4);">
+        <button class="tab-btn active" data-tab="reserva">Reserva en el tiempo</button>
+        <button class="tab-btn" data-tab="consumo">Consumo vs. Entrada</button>
+        <button class="tab-btn" data-tab="error">Error por método</button>
+        <button class="tab-btn" data-tab="tabla">Tabla comparativa</button>
+      </div>
+
+      <!-- Panel: Reserva -->
+      <div class="tab-panel active" id="panel-b-reserva">
+        <div class="card">
+          <div class="card__header"><h4>Evolución de la reserva — Euler vs. Heun vs. RK4</h4></div>
+          <div class="card__body">
+            <div class="chart-container" style="height:320px;">
+              <canvas id="chartReserva"></canvas>
+            </div>
+            <div id="ode-dias-criticos" style="margin-top:16px; overflow-x:auto;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Consumo vs Entrada -->
+      <div class="tab-panel" id="panel-b-consumo">
+        <div class="card">
+          <div class="card__header"><h4>Consumo diario vs. Reabastecimiento</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              Cuando la curva de consumo supera la línea de entrada, la reserva comienza a disminuir.
+              El cruce de las dos líneas es el punto de inflexión crítico.
+            </p>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="chartConsumo"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Error -->
+      <div class="tab-panel" id="panel-b-error">
+        <div class="card">
+          <div class="card__header"><h4>Error acumulado vs. solución analítica exacta</h4></div>
+          <div class="card__body">
+            <p style="font-size:0.85rem; color:#8b919e; margin-bottom:12px;">
+              La solución exacta es <strong>R(t) = R₀ + entrada·t − (consumo₀/k)·(eᵏᵗ−1)</strong>.
+              El gráfico muestra el error absoluto de cada método a lo largo del tiempo.
+              Escala logarítmica — un orden de magnitud de diferencia es ×10 más preciso.
+            </p>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="chartError"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Tabla -->
+      <div class="tab-panel" id="panel-b-tabla">
+        <div class="card">
+          <div class="card__header"><h4>Tabla comparativa por día</h4></div>
+          <div class="card__body">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="center">Día</th>
+                    <th class="right">Euler</th>
+                    <th class="right">Heun</th>
+                    <th class="right">RK4</th>
+                    <th class="right">Exacto</th>
+                    <th class="right">Err. Euler</th>
+                    <th class="right">Err. RK4</th>
+                    <th class="center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaODEBody">
+                  <tr><td colspan="8" class="table-empty">Ejecuta la simulación</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interpretación — reemplaza el div existente de ode-interpretacion -->
+      <div class="card" style="margin-top:var(--space-6);">
+        <div class="card__header">
+          <div class="insight-card__icon">🔬</div>
+          <h4>Interpretación del escenario B</h4>
+        </div>
+        <div class="card__body">
+
+          <!-- Respuesta automática al texto -->
+          <div id="ode-interpretacion"
+            style="font-size:0.9rem;line-height:1.8;color:#c8cdd5;margin-bottom:var(--space-6);">
+          </div>
+
+          <!-- Las 5 preguntas que debe responder la simulación -->
+          <h5 style="margin-bottom:var(--space-4);">Respuestas del escenario B</h5>
+          <div class="insight-grid">
+            <div class="insight-card">
+              <div class="insight-card__icon">📅</div>
+              <div class="insight-card__title">¿En cuántos días la reserva llega al nivel crítico?</div>
+              <p id="ode-q1">Ejecuta la simulación para ver el resultado.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">📈</div>
+              <div class="insight-card__title">¿Qué pasa si aumenta el consumo diario?</div>
+              <p id="ode-q2">Usa el preset <strong>🚨 Pánico</strong> para simular consumo elevado.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">🚧</div>
+              <div class="insight-card__title">¿Qué pasa si se reduce el abastecimiento?</div>
+              <p id="ode-q3">Usa el preset <strong>🚧 Bloqueo</strong> para simular entrada reducida.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">🎯</div>
+              <div class="insight-card__title">¿Qué método da una aproximación más estable?</div>
+              <p id="ode-q4">Ejecuta la simulación para ver la comparación de errores.</p>
+            </div>
+            <div class="insight-card">
+              <div class="insight-card__icon">⚖️</div>
+              <div class="insight-card__title">¿Cuál es la diferencia entre Euler, Heun y RK4?</div>
+              <p id="ode-q5">Ejecuta la simulación y revisa el tab <strong>Error por método</strong>.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /ode-results -->
+
+  </section>
+</div>
+
+<script type="module" src="js/modules/escenario-b-ode.js"></script>

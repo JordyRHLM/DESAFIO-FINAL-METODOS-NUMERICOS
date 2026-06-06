@@ -1,0 +1,243 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     CONCLUSIONES — Desafío Final Métodos Numéricos
+═══════════════════════════════════════════════════════════════ -->
+
+<div class="container" id="conclusiones">
+
+  <div class="module-header">
+    <div class="module-header__tag">⬡ Conclusiones · Desafío Final · Junio 2026</div>
+    <h2 class="module-header__title">Reflexión final:<br>Métodos numéricos aplicados a una crisis real</h2>
+    <p class="module-header__desc">
+      Análisis comparativo de los cinco módulos implementados, limitaciones del modelo
+      y proyecciones de mejora. Cada método numérico revela una dimensión diferente
+      de la crisis de abastecimiento en Bolivia.
+    </p>
+  </div>
+
+  <section class="page-section" style="padding-top:0;">
+
+    <!-- RESUMEN DE MÉTODOS -->
+    <div class="card" style="margin-bottom:var(--space-8);">
+      <div class="card__header"><h4>Resumen de métodos implementados</h4></div>
+      <div class="card__body">
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Módulo</th>
+                <th>Escenario</th>
+                <th>Métodos</th>
+                <th class="center">Precisión</th>
+                <th>Aplicación en la crisis</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color:var(--c-gold)">A</strong></td>
+                <td>Red de distribución</td>
+                <td style="font-family:var(--f-mono); font-size:0.78rem;">LU · Jacobi · GS · SOR · GC</td>
+                <td class="center">Exacta (LU)</td>
+                <td style="font-size:0.82rem;">Determina cuánto carburante enviar a cada zona bajo restricciones de rutas y bloqueos.</td>
+              </tr>
+              <tr>
+                <td><strong style="color:#5b9bd5">B</strong></td>
+                <td>Vaciado de reservas</td>
+                <td style="font-family:var(--f-mono); font-size:0.78rem;">Euler · Heun · RK4</td>
+                <td class="center">O(h⁴) RK4</td>
+                <td style="font-size:0.82rem;">Predice el día en que la reserva llega al nivel crítico con consumo exponencial por pánico.</td>
+              </tr>
+              <tr>
+                <td><strong style="color:#4caf82">C</strong></td>
+                <td>Curva de precios</td>
+                <td style="font-family:var(--f-mono); font-size:0.78rem;">Lagrange · Newton · Spline</td>
+                <td class="center">C² (Spline)</td>
+                <td style="font-size:0.82rem;">Reconstruye la curva continua de precios a partir de datos dispersos por semana.</td>
+              </tr>
+              <tr>
+                <td><strong style="color:#e6a817">D</strong></td>
+                <td>Costo acumulado familiar</td>
+                <td style="font-family:var(--f-mono); font-size:0.78rem;">Trapecio · Simpson 1/3 · 3/8</td>
+                <td class="center">O(h⁴) Simpson</td>
+                <td style="font-size:0.82rem;">Calcula el gasto total del mes como área bajo la curva de precios diarios.</td>
+              </tr>
+              <tr>
+                <td><strong style="color:#e05252">E</strong></td>
+                <td>Umbrales críticos</td>
+                <td style="font-family:var(--f-mono); font-size:0.78rem;">Bisección · Newton-R. · Secante</td>
+                <td class="center">Cuadrático (NR)</td>
+                <td style="font-size:0.82rem;">Encuentra el día exacto en que el sistema colapsa: consumo &gt; reabastecimiento.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONCLUSIONES POR MÓDULO -->
+    <h4 style="margin-bottom:var(--space-4);">Conclusiones por módulo</h4>
+    <div class="insight-grid" style="margin-bottom:var(--space-8);">
+
+      <div class="insight-card">
+        <div class="insight-card__icon">🗺️</div>
+        <div class="insight-card__title">Módulo A — Sistemas lineales</div>
+        <p>
+          La factorización LU demostró ser el método más confiable para sistemas 3×3,
+          entregando solución exacta en tiempo constante. Los métodos iterativos
+          (Jacobi, GS, SOR) requieren que la matriz sea <strong>diagonalmente dominante</strong>
+          para converger. SOR con ω ∈ (1, 1.5) superó a Gauss-Seidel en iteraciones.
+          El número de condición κ(A) reveló que los bloqueos de rutas vuelven el sistema
+          más sensible: pequeños cambios en demanda generan grandes variaciones en la distribución.
+        </p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-card__icon">⛽</div>
+        <div class="insight-card__title">Módulo B — Ecuaciones diferenciales</div>
+        <p>
+          RK4 demostró ser significativamente más preciso que Euler con el mismo paso h,
+          con un error O(h⁴) frente a O(h) de Euler. El modelo R'(t) = entrada − consumo₀·e^(kt)
+          captura bien el efecto del pánico: con k = 0.07 la reserva se agota en menos de 10 días.
+          La comparación con la solución analítica exacta confirmó que RK4 es
+          la herramienta correcta para este tipo de fenómenos exponenciales.
+        </p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-card__icon">📈</div>
+        <div class="insight-card__title">Módulo C — Interpolación</div>
+        <p>
+          Lagrange y Newton son algebraicamente equivalentes pero Newton es más
+          eficiente computacionalmente para agregar nuevos datos. El
+          <strong>fenómeno de Runge</strong> fue visible en los datos de aceite
+          (mayor dispersión) donde Lagrange osciló ±3 Bs en los extremos mientras
+          el spline cúbico mantuvo la curva suave. Para datos de precios dispersos
+          el spline cúbico con frontera natural es la elección óptima.
+        </p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-card__icon">💰</div>
+        <div class="insight-card__title">Módulo D — Integración numérica</div>
+        <p>
+          Simpson 1/3 superó al trapecio con el mismo número de puntos,
+          confirmando su error O(h⁴) frente a O(h²). El cálculo del área
+          bajo la curva de precios cuantificó la pérdida del poder adquisitivo:
+          una familia que compra la canasta básica diariamente gasta entre un 15%
+          y 40% más que si los precios se hubieran mantenido estables, dependiendo
+          del escenario de bloqueo.
+        </p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-card__icon">🔥</div>
+        <div class="insight-card__title">Módulo E — Raíces de ecuaciones</div>
+        <p>
+          Newton-Raphson convergió en 4–6 iteraciones frente a las 20–50 de Bisección
+          para la misma tolerancia, confirmando su orden cuadrático.
+          La Secante logró convergencia superlineal (~1.618) sin necesitar la derivada.
+          Bisección, aunque lenta, es el único método con convergencia <strong>garantizada</strong>.
+          El umbral crítico encontrado en el escenario de vaciado fue consistente con
+          los resultados del Módulo B.
+        </p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-card__icon">🔗</div>
+        <div class="insight-card__title">Conexión entre módulos</div>
+        <p>
+          Los cinco módulos son complementarios: la raíz del Módulo E coincide con
+          el día crítico del Módulo B. La curva de precios del Módulo C alimenta
+          la integración del Módulo D. El sistema de distribución del Módulo A
+          determina el parámetro "entrada" del Módulo B. El proyecto demuestra que
+          una crisis de abastecimiento puede modelarse de forma integral y cuantitativa.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- LIMITACIONES -->
+    <div class="card" style="margin-bottom:var(--space-8);">
+      <div class="card__header"><h4>Limitaciones del modelo</h4></div>
+      <div class="card__body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-6);">
+          <div>
+            <h5 style="margin-bottom:var(--space-3); color:var(--c-text-secondary);">Supuestos simplificadores</h5>
+            <ul style="font-size:0.875rem; line-height:2; color:var(--c-text-muted); padding-left:1.2rem;">
+              <li>El consumo exponencial asume pánico uniforme en toda la ciudad.</li>
+              <li>Los coeficientes de la matriz A son constantes (rutas no cambian en tiempo real).</li>
+              <li>Los precios se modelan como funciones suaves, ignorando saltos discretos.</li>
+              <li>La integración asume datos igualmente espaciados en el tiempo.</li>
+              <li>No se consideran diferencias socioeconómicas entre zonas.</li>
+            </ul>
+          </div>
+          <div>
+            <h5 style="margin-bottom:var(--space-3); color:var(--c-text-secondary);">Fuentes de error</h5>
+            <ul style="font-size:0.875rem; line-height:2; color:var(--c-text-muted); padding-left:1.2rem;">
+              <li>Datos de entrada estimados — se necesitan datos reales del INE y YPFB.</li>
+              <li>Error de truncamiento acumulado en métodos iterativos y EDOs.</li>
+              <li>Error de redondeo de punto flotante (64 bits, IEEE 754).</li>
+              <li>Extrapolación fuera del rango de datos interpolados.</li>
+              <li>Matrices mal condicionadas amplifican pequeños errores en los datos.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEJORAS PROPUESTAS -->
+    <div class="card" style="margin-bottom:var(--space-8);">
+      <div class="card__header"><h4>Mejoras y extensiones propuestas</h4></div>
+      <div class="card__body">
+        <div class="insight-grid">
+          <div class="insight-card">
+            <div class="insight-card__icon">📡</div>
+            <div class="insight-card__title">Datos en tiempo real</div>
+            <p>Conectar a APIs del INE (Instituto Nacional de Estadística) y YPFB para alimentar los modelos con datos actualizados diariamente en lugar de datos estimados.</p>
+          </div>
+          <div class="insight-card">
+            <div class="insight-card__icon">🗺️</div>
+            <div class="insight-card__title">Red de distribución ampliada</div>
+            <p>Escalar el sistema de 3×3 a n×n zonas (departamentos, municipios) e incorporar restricciones de capacidad de transporte y costos de operación.</p>
+          </div>
+          <div class="insight-card">
+            <div class="insight-card__icon">🧮</div>
+            <div class="insight-card__title">Métodos más avanzados</div>
+            <p>Incorporar métodos adaptativos (paso h variable en EDOs), splines paramétricos para precios con discontinuidades, y métodos de optimización no lineal.</p>
+          </div>
+          <div class="insight-card">
+            <div class="insight-card__icon">🎲</div>
+            <div class="insight-card__title">Modelos estocásticos</div>
+            <p>Añadir incertidumbre probabilística (Monte Carlo) para modelar la variabilidad real del consumo, los bloqueos imprevistos y la volatilidad de precios.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REFLEXIÓN FINAL -->
+    <div class="card card--gold">
+      <div class="card__header"><h4>Reflexión final</h4></div>
+      <div class="card__body" style="font-size:0.95rem; line-height:1.9; color:#c8cdd5;">
+        <p style="margin-bottom:var(--space-4);">
+          Este proyecto demostró que los <strong>métodos numéricos no son solo herramientas matemáticas abstractas</strong>,
+          sino instrumentos concretos para entender y anticipar fenómenos reales. La crisis de
+          abastecimiento de Bolivia en 2026 puede modelarse cuantitativamente: desde la distribución
+          óptima de carburante hasta el día exacto en que una familia entra en déficit económico.
+        </p>
+        <p style="margin-bottom:var(--space-4);">
+          La elección del método correcto es crucial. <strong>LU</strong> para sistemas pequeños y exactos.
+          <strong>RK4</strong> para fenómenos dinámicos con alta precisión. <strong>Spline cúbico</strong>
+          para reconstruir curvas continuas de datos dispersos. <strong>Simpson</strong> para integrar
+          costos acumulados. <strong>Newton-Raphson</strong> para encontrar umbrales críticos rápidamente.
+        </p>
+        <p>
+          Los modelos matemáticos no reemplazan la decisión humana ni la política pública,
+          pero proveen información cuantitativa objetiva que permite tomar decisiones más
+          informadas, anticipar crisis y distribuir recursos de manera más equitativa.
+          <strong>Un buen modelo numérico puede ser la diferencia entre anticipar un desabastecimiento
+          y reaccionar cuando ya es demasiado tarde.</strong>
+        </p>
+      </div>
+    </div>
+
+  </section>
+</div>

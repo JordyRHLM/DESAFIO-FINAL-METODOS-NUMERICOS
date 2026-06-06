@@ -1,0 +1,476 @@
+<div class="container" id="moduloA">
+
+  <div class="module-header">
+    <div class="module-header__tag">⬡ Escenario A · Sistemas Lineales · 04/06/2026</div>
+    <h2 class="module-header__title">Red de distribución:<br>La Paz bajo bloqueo</h2>
+    <p class="module-header__desc">
+      <strong>Contexto real:</strong> Tres plantas (Senkata, Cochabamba, Oruro) abastecen
+      tres macro-zonas (El Alto, Centro, Sur). El bloqueo de la carretera Oruro–La Paz
+      ha reducido la capacidad de transporte en un 80%. Se modela la distribución óptima
+      de carburante respondiendo: ¿cuánto enviar a cada zona?, ¿qué zona queda más
+      afectada?, ¿el sistema es estable?
+    </p>
+    <div class="method-pills">
+      <span class="method-pill active">LU (directo)</span>
+      <span class="method-pill">Jacobi</span>
+      <span class="method-pill">Gauss-Seidel</span>
+      <span class="method-pill">SOR (ω=1.25)</span>
+      <span class="method-pill">Gradiente Conjugado</span>
+    </div>
+  </div>
+
+  <section class="page-section" style="padding-top:0;">
+
+    <!-- CONTEXTO + RESULTADOS RÁPIDOS -->
+    <div class="context-grid" style="margin-bottom:var(--space-8);">
+
+      <div class="card">
+        <div class="card__header">
+          <h4>Sistema Ax = b</h4>
+          <span style="font-size:0.75rem;font-family:var(--f-mono);">Flujo en miles de litros/día</span>
+        </div>
+        <div class="card__body">
+          <p style="font-size:0.875rem;margin-bottom:var(--space-4);">
+            <strong>Variables:</strong><br>
+            x₁ = Zona 1 (El Alto) &nbsp;·&nbsp;
+            x₂ = Zona 2 (La Paz Centro) &nbsp;·&nbsp;
+            x₃ = Zona 3 (La Paz Sur)<br>
+            La matriz <strong>A</strong> representa la eficiencia/fricción vial.
+            El vector <strong>b</strong> es la demanda crítica mínima por zona.
+          </p>
+          <div class="alert alert-warning">
+            <span class="alert-icon">🚧</span>
+            <div style="font-size:0.82rem;">
+              <strong>Escenario actual (04/06/2026):</strong> Bloqueo en ruta Oruro–La Paz.
+              El preset <em>Bloqueo</em> reduce el coeficiente a₁₂ de 1.5 → 0.2,
+              cortando casi toda la conexión hacia La Paz Centro.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card--gold">
+        <div class="card__header"><h4>Resultados · Distribución óptima</h4></div>
+        <div class="card__body">
+          <div class="insight-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="insight-card" style="padding:var(--space-3);">
+              <div style="font-size:0.75rem;">Zona 1 (El Alto)</div>
+              <div style="font-size:1.2rem;color:var(--c-gold);" id="solNorte">—</div>
+              <div style="font-size:0.7rem;" class="text-muted">miles L/día</div>
+            </div>
+            <div class="insight-card" style="padding:var(--space-3);">
+              <div style="font-size:0.75rem;">Zona 2 (Centro)</div>
+              <div style="font-size:1.2rem;color:var(--c-gold);" id="solCentro">—</div>
+              <div style="font-size:0.7rem;" class="text-muted">miles L/día</div>
+            </div>
+            <div class="insight-card" style="padding:var(--space-3);">
+              <div style="font-size:0.75rem;">Zona 3 (Sur)</div>
+              <div style="font-size:1.2rem;color:var(--c-gold);" id="solSur">—</div>
+              <div style="font-size:0.7rem;" class="text-muted">miles L/día</div>
+            </div>
+            <div class="insight-card" style="padding:var(--space-3);">
+              <div style="font-size:0.75rem;">Nº condición κ(A)</div>
+              <div style="font-size:1.2rem;font-family:var(--f-mono);" id="condNum">—</div>
+              <div style="font-size:0.7rem;" class="text-muted">&lt;100: estable · &gt;1000: inestable</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" style="margin-bottom:var(--space-8);">
+      <div class="card__header">
+        <h4>Ingresar sistema Ax = b</h4>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" id="btnPreset1">📋 Caso base</button>
+          <button class="btn btn-sm btn-secondary" id="btnPreset2">🚧 Bloqueo (04/06/26)</button>
+          <button class="btn btn-sm btn-secondary" id="btnPreset3">📈 Emergencia (+50%)</button>
+        </div>
+      </div>
+      <div class="card__body">
+
+        <div id="presetDesc"
+          style="display:none;font-size:0.8rem;color:#8b919e;margin-bottom:12px;font-family:var(--f-mono);"></div>
+        <div id="diagWarning" class="alert alert-danger"
+          style="display:none;margin-bottom:12px;">
+          <span class="alert-icon">⚠️</span>
+          <div><strong>Matriz no diagonalmente dominante:</strong> los métodos iterativos pueden
+          no converger. Usa LU para la solución exacta o aumenta los valores de la diagonal.</div>
+        </div>
+
+        <div class="ab-grid">
+          <div>
+            <h5 style="margin-bottom:var(--space-3);">Matriz A (3×3)</h5>
+            <div class="matrix-input" id="matrixA">
+              <input type="number" value="10.0" step="0.1">
+              <input type="number" value="1.5"  step="0.1">
+              <input type="number" value="0.5"  step="0.1">
+              <input type="number" value="1.0"  step="0.1">
+              <input type="number" value="10.0" step="0.1">
+              <input type="number" value="1.5"  step="0.1">
+              <input type="number" value="0.5"  step="0.1">
+              <input type="number" value="1.0"  step="0.1">
+              <input type="number" value="10.0" step="0.1">
+            </div>
+            <p class="form-hint" style="margin-top:var(--space-2);">
+              Filas: Restricciones por zona · Columnas: Eficiencia de ruta
+            </p>
+          </div>
+          <div class="ax-symbol">· x ·</div>
+          <div>
+            <h5 style="margin-bottom:var(--space-3);">Vector b (demanda crítica)</h5>
+            <div class="matrix-input b-vector">
+              <input type="number" value="220" step="10" id="b0">
+              <input type="number" value="285" step="10" id="b1">
+              <input type="number" value="195" step="10" id="b2">
+            </div>
+            <p class="form-hint" style="margin-top:var(--space-2);">
+              miles de litros/día · El Alto 220, Centro 285, Sur 195
+            </p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Tolerancia (métodos iterativos)</label>
+            <input class="form-control" id="tolerance" type="number" value="0.0001" step="0.00001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Máx. iteraciones</label>
+            <input class="form-control" id="maxIter" type="number" value="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Factor ω SOR (0 &lt; ω &lt; 2)</label>
+            <input class="form-control" id="omegaSOR" type="number" value="1.25" step="0.05" min="0.01" max="1.99">
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:var(--space-4);">
+          <button class="btn btn-primary btn-lg" id="btnSolve">Resolver con todos los métodos</button>
+          <button class="btn btn-secondary btn-lg" id="btnClear">Limpiar resultados</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs" style="margin-bottom:var(--space-6);">
+      <button class="tab-btn active" data-tab="lu">LU</button>
+      <button class="tab-btn" data-tab="jacobi">Jacobi</button>
+      <button class="tab-btn" data-tab="gs">Gauss-Seidel</button>
+      <button class="tab-btn" data-tab="sor">SOR (ω)</button>
+      <button class="tab-btn" data-tab="cg">Grad. Conjugado</button>
+      <button class="tab-btn" data-tab="compare">Comparativa</button>
+    </div>
+
+    <!-- ══ Panel LU ══ -->
+    <div class="tab-panel active" id="panel-lu">
+      <div class="two-col-grid">
+        <div>
+          <div class="algo-block">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Algoritmo LU · Doolittle</span>
+            </div>
+            <pre><span class="cm">// Descomposición A = L·U</span>
+<span class="kw">para</span> k = 0 <span class="kw">hasta</span> n-1:
+  U[k][j] = A[k][j] - Σ L[k][p]*U[p][j]
+  L[i][k] = (A[i][k] - Σ ...) / U[k][k]
+<span class="cm">// Sustitución progresiva:  L·y = b</span>
+<span class="cm">// Sustitución regresiva:   U·x = y</span></pre>
+          </div>
+          <div class="alert alert-info" style="margin-top:var(--space-3);">
+            📌 <strong>Método directo</strong> · Solución exacta en O(n³) ·
+            Ideal para sistemas pequeños y bien condicionados.
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card__header"><h4>Resultado LU</h4></div>
+            <div class="card__body" id="resultLU">
+              <p class="text-muted">Ejecuta el cálculo para ver resultados.</p>
+            </div>
+          </div>
+          <div class="chart-container" style="margin-top:var(--space-4);">
+            <div class="chart-title">Distribución óptima por zona</div>
+            <canvas id="chartLU"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="interp-block" id="interpLU" style="display:none;">
+        <div class="interp-block__title">📋 Interpretación — LU · Respuestas al escenario</div>
+        <div id="interpLU-text"></div>
+      </div>
+    </div>
+
+    <!-- ══ Panel Jacobi ══ -->
+    <div class="tab-panel" id="panel-jacobi">
+      <div class="two-col-grid">
+        <div>
+          <div class="algo-block">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Algoritmo Jacobi</span>
+            </div>
+            <pre><span class="kw">para</span> iter = 1..maxIter:
+  <span class="kw">para</span> i = 0..n-1:
+    x_new[i] = (b[i] - Σ_{j≠i} A[i][j]*x[j])
+               / A[i][i]  <span class="cm">← usa x_old</span>
+  error = ||x_new - x|| / ||x_new||
+  x = x_new
+  <span class="kw">si</span> error &lt; tol: <span class="kw">detener</span></pre>
+          </div>
+          <div class="alert alert-warning" style="margin-top:var(--space-3);">
+            ⚠️ Actualización <strong>simultánea</strong> · Requiere diagonal dominante ·
+            Convergencia lenta pero paralelizable.
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card__header"><h4>Resultado Jacobi</h4></div>
+            <div class="card__body" id="resultJacobi">
+              <p class="text-muted">Ejecuta el cálculo para ver resultados.</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Convergencia del error</div>
+            <canvas id="chartJacobi"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-4);">
+        <h5>Tabla de iteraciones</h5>
+        <div class="table-wrapper" id="tableJacobi">
+          <div class="table-empty">Ejecuta el cálculo.</div>
+        </div>
+      </div>
+      <div class="interp-block" id="interpJacobi" style="display:none;">
+        <div class="interp-block__title">📋 Interpretación — Jacobi · Respuestas al escenario</div>
+        <div id="interpJacobi-text"></div>
+      </div>
+    </div>
+
+    <!-- ══ Panel Gauss-Seidel ══ -->
+    <div class="tab-panel" id="panel-gs">
+      <div class="two-col-grid">
+        <div>
+          <div class="algo-block">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Gauss-Seidel</span>
+            </div>
+            <pre><span class="kw">para</span> iter = 1..maxIter:
+  <span class="kw">para</span> i = 0..n-1:
+    suma = Σ_{j&lt;i} A[i][j]*x[j]  <span class="cm">← x nuevo</span>
+         + Σ_{j&gt;i} A[i][j]*x[j]  <span class="cm">← x viejo</span>
+    x[i] = (b[i] - suma) / A[i][i]
+  error = ||Δx|| / ||x||</pre>
+          </div>
+          <div class="alert alert-success" style="margin-top:var(--space-3);">
+            ✓ Convergencia <strong>~2× más rápida</strong> que Jacobi ·
+            Usa los valores actualizados inmediatamente.
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card__header"><h4>Resultado Gauss-Seidel</h4></div>
+            <div class="card__body" id="resultGS">
+              <p class="text-muted">Ejecuta el cálculo para ver resultados.</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Convergencia del error</div>
+            <canvas id="chartGS"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-4);">
+        <h5>Tabla de iteraciones</h5>
+        <div class="table-wrapper" id="tableGS">
+          <div class="table-empty">Ejecuta el cálculo.</div>
+        </div>
+      </div>
+      <div class="interp-block" id="interpGS" style="display:none;">
+        <div class="interp-block__title">📋 Interpretación — Gauss-Seidel · Respuestas al escenario</div>
+        <div id="interpGS-text"></div>
+      </div>
+    </div>
+
+    <!-- ══ Panel SOR ══ -->
+    <div class="tab-panel" id="panel-sor">
+      <div class="two-col-grid">
+        <div>
+          <div class="algo-block">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">SOR · Successive Over-Relaxation</span>
+            </div>
+            <pre>x_gs = (b[i] - Σ A[i][j]*x[j]) / A[i][i]
+x[i] = (1−ω)·x[i] + ω·x_gs
+
+<span class="cm">// ω = 1    → Gauss-Seidel clásico</span>
+<span class="cm">// 1&lt;ω&lt;2  → sobrerrelajación (acelera)</span>
+<span class="cm">// ω &lt; 1  → subrelajación (estabiliza)</span></pre>
+          </div>
+          <div class="alert alert-info" style="margin-top:var(--space-3);">
+            ⚙️ ω óptimo ≈ 1.1–1.5 para la mayoría de sistemas ·
+            Prueba distintos valores y compara iteraciones.
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card__header"><h4>Resultado SOR</h4></div>
+            <div class="card__body" id="resultSOR">
+              <p class="text-muted">Ejecuta el cálculo para ver resultados.</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Convergencia del error</div>
+            <canvas id="chartSOR"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-4);">
+        <h5>Tabla de iteraciones</h5>
+        <div class="table-wrapper" id="tableSOR">
+          <div class="table-empty">Ejecuta el cálculo.</div>
+        </div>
+      </div>
+      <div class="interp-block" id="interpSOR" style="display:none;">
+        <div class="interp-block__title">📋 Interpretación — SOR · Respuestas al escenario</div>
+        <div id="interpSOR-text"></div>
+      </div>
+    </div>
+
+    <!-- ══ Panel Gradiente Conjugado ══ -->
+    <div class="tab-panel" id="panel-cg">
+      <div class="two-col-grid">
+        <div>
+          <div class="algo-block">
+            <div class="algo-block__header">
+              <span class="algo-block__lang">Gradiente Conjugado</span>
+            </div>
+            <pre>r = b − A·x;  p = r;  rr = r·r
+<span class="kw">para</span> iter:
+  Ap = A·p
+  α  = rr / (p·Ap)
+  x  = x + α·p
+  r  = r − α·Ap
+  β  = rr_new / rr
+  p  = r + β·p</pre>
+          </div>
+          <div class="alert alert-warning" style="margin-top:var(--space-3);">
+            ⚠️ Requiere A simétrica definida positiva ·
+            El algoritmo la simetriza automáticamente si no lo es.
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card__header"><h4>Resultado Grad. Conjugado</h4></div>
+            <div class="card__body" id="resultCG">
+              <p class="text-muted">Ejecuta el cálculo para ver resultados.</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Norma del residuo</div>
+            <canvas id="chartCG"></canvas>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-4);">
+        <h5>Tabla de iteraciones</h5>
+        <div class="table-wrapper" id="tableCG">
+          <div class="table-empty">Ejecuta el cálculo.</div>
+        </div>
+      </div>
+      <div class="interp-block" id="interpCG" style="display:none;">
+        <div class="interp-block__title">📋 Interpretación — Grad. Conjugado · Respuestas al escenario</div>
+        <div id="interpCG-text"></div>
+      </div>
+    </div>
+
+    <!-- ══ Panel Comparativa ══ -->
+    <div class="tab-panel" id="panel-compare">
+
+      <!-- Gráfico convergencia -->
+      <div class="chart-container" style="margin-bottom:var(--space-6);">
+        <div class="chart-title">Convergencia comparada — todos los métodos iterativos</div>
+        <canvas id="chartCompare"></canvas>
+      </div>
+
+      <!-- Tabla resumen -->
+      <h5 style="margin:var(--space-6) 0 var(--space-3);">Resumen comparativo de métodos</h5>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Método</th>
+              <th class="center">Iteraciones</th>
+              <th class="right">Error final</th>
+              <th class="right">Zona 1</th>
+              <th class="right">Zona 2</th>
+              <th class="right">Zona 3</th>
+              <th class="center">Converge</th>
+            </tr>
+          </thead>
+          <tbody id="compareBody">
+            <tr><td colspan="7" class="table-empty">Ejecuta el cálculo para comparar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Análisis de bloqueo -->
+      <h5 style="margin:var(--space-8) 0 var(--space-3);">
+        Análisis de impacto — ¿qué pasa si una ruta se bloquea?
+      </h5>
+      <div class="chart-container" style="margin-bottom:var(--space-6);">
+        <div class="chart-title">Distribución con y sin bloqueo de ruta Senkata → Centro</div>
+        <canvas id="chartImpacto"></canvas>
+      </div>
+
+      <!-- Análisis de sensibilidad -->
+      <h5 style="margin:var(--space-8) 0 var(--space-3);">
+        Análisis de sensibilidad — ¿la solución cambia mucho si la demanda varía ±10%?
+      </h5>
+      <div class="chart-container" style="margin-bottom:var(--space-6);">
+        <div class="chart-title">Distribución con demanda −10%, base y +10%</div>
+        <canvas id="chartSensibilidad"></canvas>
+      </div>
+
+      <!-- Las 5 preguntas -->
+      <h5 style="margin:var(--space-8) 0 var(--space-4);">
+        Respuestas del escenario A
+      </h5>
+      <div class="insight-grid">
+        <div class="insight-card">
+          <div class="insight-card__icon">⛽</div>
+          <div class="insight-card__title">¿Cuánto debe enviarse a cada zona?</div>
+          <p id="insightDistrib">Ejecuta el cálculo para ver la interpretación.</p>
+        </div>
+        <div class="insight-card">
+          <div class="insight-card__icon">🚧</div>
+          <div class="insight-card__title">¿Qué pasa si una ruta se bloquea? ¿Qué zona queda más afectada?</div>
+          <p id="insightBloqueo">Ejecuta el cálculo para ver el análisis de impacto.</p>
+        </div>
+        <div class="insight-card">
+          <div class="insight-card__icon">📊</div>
+          <div class="insight-card__title">¿El sistema es estable o sensible a cambios?</div>
+          <p id="insightCond">Ejecuta el cálculo para ver el diagnóstico de estabilidad.</p>
+        </div>
+        <div class="insight-card">
+          <div class="insight-card__icon">📈</div>
+          <div class="insight-card__title">¿La solución cambia mucho si la demanda aumenta?</div>
+          <p id="insightSens">Ejecuta el cálculo para ver el análisis de sensibilidad.</p>
+        </div>
+        <div class="insight-card">
+          <div class="insight-card__icon">⚡</div>
+          <div class="insight-card__title">¿Qué método es más eficiente?</div>
+          <p id="insightBest">Ejecuta el cálculo para ver el análisis de convergencia.</p>
+        </div>
+      </div>
+
+    </div><!-- /panel-compare -->
+
+  </section>
+</div>
+
+<script type="module" src="js/modules/escenario-a-sistemas.js"></script>
